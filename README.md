@@ -11,6 +11,7 @@ Project ini masiih berjalan di localhost dan jika sudah siap, akan di deploy ke 
 - Framework: Sapphire
 - Environment-based config (`.env`)
 - Template (`.env`) yaitu (`.env.examples`)
+- Command create lobby (`/createlobby`) untuk membuat id lobby terlihat di member lain
 - Siap dikembangkan secara kolaboratif
 
 ---
