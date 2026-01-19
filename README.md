@@ -2,6 +2,7 @@
 
 Discord bot berbasis **Node.js** menggunakan **discord.js v14** dan **@sapphire/framework**.  
 Project ini dikembangkan secara kolaboratif untuk membantu komunitas, khususnya seputar Monster Hunter (command akan dikembangkan bertahap).
+Project ini masiih berjalan di localhost dan jika sudah siap, akan di deploy ke server discord, freax squad.
 
 ---
 
@@ -9,6 +10,7 @@ Project ini dikembangkan secara kolaboratif untuk membantu komunitas, khususnya 
 - Slash Command (`/ping`)
 - Framework: Sapphire
 - Environment-based config (`.env`)
+- Template (`.env`) yaitu (`.env.examples`)
 - Siap dikembangkan secara kolaboratif
 
 ---
