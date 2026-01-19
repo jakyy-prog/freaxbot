@@ -16,7 +16,6 @@ class CreateLobbyCommand extends Command {
         .setName(this.name)
         .setDescription(this.description)
 
-        // REQUIRED dulu
         .addStringOption((option) =>
           option
             .setName("room_id")
@@ -36,7 +35,6 @@ class CreateLobbyCommand extends Command {
             ),
         )
 
-        // OPTIONAL terakhir
         .addStringOption((option) =>
           option
             .setName("password")
@@ -46,7 +44,6 @@ class CreateLobbyCommand extends Command {
     );
   }
 
-  // 🔥 INI DIA
   async chatInputRun(interaction) {
     const roomId = interaction.options.getString("room_id");
     const game = interaction.options.getString("game");
