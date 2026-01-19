@@ -1,17 +1,17 @@
-const { Listener } =require("@sapphire/framework");
+const { Listener } = require("@sapphire/framework");
 
-class ClientReadyListener extends Listener{
-    constructor(context, options) {
-        super(context, {
-            ...options,
-            event: "clientReady",
-        });
-    }
+class ClientReadyListener extends Listener {
+  constructor(context, options) {
+    super(context, {
+      ...options,
+      event: "clientReady",
+    });
+  }
 
-    run(client) {
-        const { username, id } = client.user;
-        this.container.logger.info(`Succesfully logged in as ${username} (${id})`)
-    }
+  run(client) {
+    const { username, id } = client.user;
+    this.container.logger.info(`Succesfully logged in as ${username} (${id})`);
+  }
 }
 
 module.exports = { ClientReadyListener };

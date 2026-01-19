@@ -1,29 +1,33 @@
-const { SapphireClient, ApplicationCommandRegistries, RegisterBehavior } = require("@sapphire/framework");
+const {
+  SapphireClient,
+  ApplicationCommandRegistries,
+  RegisterBehavior,
+} = require("@sapphire/framework");
 const { GatewayIntentBits } = require("discord.js");
 
 class REdoClient extends SapphireClient {
-    constructor() {
-        super({
-            intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.MessageContent,
-                GatewayIntentBits.GuildMembers,
-            ],
-        })
-    }
+  constructor() {
+    super({
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+      ],
+    });
+  }
 
-    login(token) {
-        ApplicationCommandRegistries.setDefaultBehaviorWhenNotIdentical(
-            RegisterBehavior.BulkOverwrite
-        );
+  login(token) {
+    ApplicationCommandRegistries.setDefaultBehaviorWhenNotIdentical(
+      RegisterBehavior.BulkOverwrite,
+    );
 
-        ApplicationCommandRegistries.setDefaultGuildIds([
-            process.env.DISCORD_GUILD_ID,
-        ]);
+    ApplicationCommandRegistries.setDefaultGuildIds([
+      process.env.DISCORD_GUILD_ID,
+    ]);
 
-        return super.login(token);
-    }
+    return super.login(token);
+  }
 }
 
 module.exports = { REdoClient };

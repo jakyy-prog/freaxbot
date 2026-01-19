@@ -1,29 +1,27 @@
 const { Command } = require("@sapphire/framework");
 
 class Pingcommand extends Command {
-    constructor(context, options) {
-        super(context, {
-            ...options,
-            name: "ping",
-            description: "Replies with Pong!",
-        });
-    }
+  constructor(context, options) {
+    super(context, {
+      ...options,
+      name: "ping",
+      description: "Melihat ping bot.",
+    });
+  }
 
-    async chatInputRun(interaction) {
-        const ping = interaction.client.ws.ping;
+  async chatInputRun(interaction) {
+    const ping = interaction.client.ws.ping;
 
-        await interaction.reply({
-            content: `Ping bot cuma ${ping}ms😊`,
-        });
-    }
+    await interaction.reply({
+      content: `Ping bot adalah ${ping}ms😊`,
+    });
+  }
 
-    registerApplicationCommands(registry) {
-        registry.registerChatInputCommand((builder) =>
-            builder
-                .setName(this.name)
-                .setDescription(this.description)
-        );
-    }
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand((builder) =>
+      builder.setName(this.name).setDescription(this.description),
+    );
+  }
 }
 
 module.exports = { Pingcommand };
