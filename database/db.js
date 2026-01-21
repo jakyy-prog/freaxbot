@@ -6,6 +6,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     room_id TEXT NOT NULL,
     password TEXT,
+    objective TEXT,
     game TEXT NOT NULL,
     owner_id TEXT NOT NULL,
     channel_id TEXT NOT NULL,

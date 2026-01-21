@@ -41,6 +41,13 @@ class CreateLobbyCommand extends Command {
             .setName("password")
             .setDescription("Password lobby (opsional)")
             .setRequired(false),
+        )
+
+        .addStringOption((option) =>
+          option
+            .setName("deskripsi")
+            .setDescription("Objective hunting (opsional)")
+            .setRequired(false),
         ),
     );
   }
@@ -67,6 +74,8 @@ class CreateLobbyCommand extends Command {
     const game = interaction.options.getString("game");
     const password =
       interaction.options.getString("password") ?? "Tanpa Password";
+    const deskripsi =
+      interaction.options.getString("deskripsi") ?? "Tanpa Deskripsi";
 
     const embed = new EmbedBuilder()
       .setTitle("🎮 Lobby Monster Hunter")
@@ -75,6 +84,7 @@ class CreateLobbyCommand extends Command {
         { name: "Game", value: game.toUpperCase(), inline: true },
         { name: "Room ID", value: `\`${roomId}\``, inline: true },
         { name: "Password", value: `\`${password}\``, inline: true },
+        { name: "Deskripsi", value: `\`${deskripsi}\``, inline: true },
       )
       .setFooter({
         text: `Host: ${interaction.user.username}`,
@@ -90,12 +100,13 @@ class CreateLobbyCommand extends Command {
     db.prepare(
       `
       INSERT INTO lobbies 
-      (room_id, password, game, owner_id, channel_id, message_id)
-      VALUES (?, ?, ?, ?, ?, ?)
+      (room_id, password, objective, game, owner_id, channel_id, message_id)
+      VALUES (?, ?, ?, ?, ?, ?,?)
     `,
     ).run(
       roomId,
       password,
+      deskripsi,
       game,
       interaction.user.id,
       interaction.channelId,
@@ -112,7 +123,7 @@ class CreateLobbyCommand extends Command {
   `,
         ).run(reply.id);
       },
-      1000 * 60 * 60 * 7,
+      1000 * 60 * 60 * 6,
     );
   }
 }
