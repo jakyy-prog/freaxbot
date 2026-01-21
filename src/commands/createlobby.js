@@ -1,5 +1,6 @@
 const { Command } = require("@sapphire/framework");
 const { EmbedBuilder } = require("discord.js");
+const db = require("../../database/db");
 
 class CreateLobbyCommand extends Command {
   constructor(context, options) {
@@ -45,6 +46,23 @@ class CreateLobbyCommand extends Command {
   }
 
   async chatInputRun(interaction) {
+    const existing = db
+      .prepare(
+        `
+  SELECT 1 FROM lobbies 
+  WHERE owner_id = ? AND is_active = 1
+`,
+      )
+      .get(interaction.user.id);
+
+    if (existing) {
+      return interaction.reply({
+        content:
+          "❌ Kamu masih punya lobby aktif. Tutup dulu sebelum bikin yang baru.",
+        ephemeral: true,
+      });
+    }
+
     const roomId = interaction.options.getString("room_id");
     const game = interaction.options.getString("game");
     const password =
@@ -63,10 +81,39 @@ class CreateLobbyCommand extends Command {
       })
       .setTimestamp();
 
-    await interaction.reply({
-      content: `@everyone ${interaction.user} lagi buka lobby nih! Gas join🔥🔥🔥`,
+    const reply = await interaction.reply({
+      content: `@everyone ${interaction.user} lagi buka lobby nih! Gas join 🔥`,
       embeds: [embed],
+      fetchReply: true,
     });
+
+    db.prepare(
+      `
+      INSERT INTO lobbies 
+      (room_id, password, game, owner_id, channel_id, message_id)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `,
+    ).run(
+      roomId,
+      password,
+      game,
+      interaction.user.id,
+      interaction.channelId,
+      reply.id,
+    );
+
+    setTimeout(
+      () => {
+        db.prepare(
+          `
+    UPDATE lobbies 
+    SET is_active = 0 
+    WHERE message_id = ? AND is_active = 1
+  `,
+        ).run(reply.id);
+      },
+      1000 * 60 * 60 * 7,
+    );
   }
 }
 

@@ -13,7 +13,7 @@ class Pingcommand extends Command {
     const ping = interaction.client.ws.ping;
 
     await interaction.reply({
-      content: `Ping bot adalah ${ping}ms😊`,
+      content: `Pong!🏓 Ping bot adalah ${ping}ms😊`,
     });
   }
 
