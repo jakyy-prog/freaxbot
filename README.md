@@ -11,12 +11,21 @@ Saat ini bot masih berjalan di **localhost** dan akan di-deploy ke server Discor
 ---
 
 ## 🚀 Fitur Saat Ini
-- `/ping` — Mengecek latency bot
-- `/createlobby` — Membuat lobby Monster Hunter (auto close setelah 7 jam)
-- `/closelobby` — Menutup lobby yang sedang aktif
-- Konfigurasi berbasis environment (`.env`)
-- Template konfigurasi (`.env.example`)
-- Siap dikembangkan secara kolaboratif
+/ping
+→ Mengecek latency bot
+/createlobby
+→ Membuat lobby Monster Hunter
+→ 1 user hanya bisa memiliki 1 lobby aktif
+→ Lobby akan auto close setelah 6–7 jam
+/closelobby
+→ Menutup lobby milik sendiri
+/listlobby
+→ Menampilkan daftar lobby Monster Hunter yang sedang aktif
+/help
+→ Menampilkan daftar command Freaxbot
+Konfigurasi berbasis environment (.env)
+Template konfigurasi (.env.example)
+Siap dikembangkan secara kolaboratif
 
 ---
 
@@ -29,12 +38,3 @@ Saat ini bot masih berjalan di **localhost** dan akan di-deploy ke server Discor
 - (opsional) Prisma
 
 ---
-
-## 📁 Struktur Project
-```txt
-src/
- ├─ commands/      # Slash commands
- ├─ listeners/     # Event listeners
- ├─ database/      # Database & query
- ├─ client.js      # Custom Sapphire client
- └─ index.js       # Entry point
