@@ -4,7 +4,7 @@ const db = new Database("database/lobby.db");
 db.exec(`
   CREATE TABLE IF NOT EXISTS lobbies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    room_id TEXT NOT NULL,
+    room_id TEXT NOT NULL UNIQUE,
     password TEXT,
     objective TEXT,
     game TEXT NOT NULL,
