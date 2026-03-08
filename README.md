@@ -21,6 +21,8 @@ Saat ini bot masih berjalan di **localhost** dan akan di-deploy ke server Discor
 - → Menutup lobby milik sendiri
 - /listlobby
 - → Menampilkan daftar lobby Monster Hunter yang sedang aktif
+- /quests
+- → Menampilkan daftar quest di game monster hunter dengan menggunakan api
 - /help
 - → Menampilkan daftar command Freaxbot
 - Konfigurasi berbasis environment (.env)
