@@ -64,7 +64,7 @@ class CreateLobbyCommand extends Command {
       if (userHasLobby) {
         return interaction.reply({
           content:
-            "❌ Kamu masih punya lobby aktif. Tutup dulu sebelum bikin yang baru.",
+            "❌ Kamu masih punya lobby aktif. Tutup dulu sebelum membuat yang baru.",
           ephemeral: true,
         });
       }
@@ -86,7 +86,7 @@ class CreateLobbyCommand extends Command {
       if (roomExists) {
         return interaction.reply({
           content:
-            "❌ Kode room sudah ada, coba buka /lobbylist untuk melihat lobby yang sedang aktif.",
+            "Kode room sudah ada, coba buka /lobbylist untuk melihat lobby yang sedang aktif.",
           ephemeral: true,
         });
       }
@@ -106,7 +106,7 @@ class CreateLobbyCommand extends Command {
         .setTimestamp();
 
       const reply = await interaction.reply({
-        content: `@everyone ${interaction.user} lagi buka lobby nih! Gas join 🔥`,
+        content: `@everyone ${interaction.user} lagi buka lobby nih! Gas join `,
         embeds: [embed],
         fetchReply: true,
       });
@@ -145,13 +145,13 @@ class CreateLobbyCommand extends Command {
       if (err.code === "SQLITE_CONSTRAINT_UNIQUE") {
         return interaction.reply({
           content:
-            "❌ Kode room sudah ada, coba buka /lobbylist untuk melihat llobby yang aktif.",
+            "Kode room sudah ada, coba buka /lobbylist untuk melihat lobby yang aktif.",
           ephemeral: true,
         });
       }
 
       return interaction.reply({
-        content: "❌ Terjadi kesalahan saat membuat lobby.",
+        content: "Terjadi kesalahan saat membuat lobby, mohon coba lagi.",
         ephemeral: true,
       });
     }
