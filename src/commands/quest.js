@@ -27,10 +27,16 @@ class QuestCommand extends Command {
             .setName("game")
             .setDescription("Pilih game Monster Hunter")
             .setRequired(true)
-            .addChoices({
-              name: "Monster Hunter Portable 3rd",
-              value: "mhp3rd",
-            }),
+            .addChoices(
+              {
+                name: "Monster Hunter Portable 3rd",
+                value: "mhp3rd",
+              },
+              {
+                name: "Monster Hunter Freedom Unite",
+                value: "mhfu",
+              },
+            ),
         )
         .addStringOption((option) =>
           option
@@ -54,11 +60,26 @@ class QuestCommand extends Command {
   }
 
   buildEmbed(data, page, totalPages, game, type, stars) {
-    const gameName =
-      game === "mhp3rd" ? "Monster Hunter Portable 3rd" : game.toUpperCase();
+    const gameNames = {
+      mhp3rd: "Monster Hunter Portable 3rd",
+      mhfu: "Monster Hunter Freedom Unite",
+    };
+    const gameName = gameNames[game] || game.toUpperCase();
     const typeName = type.charAt(0).toUpperCase() + type.slice(1);
     const perPage = 10;
     const start = page * perPage;
+    const maxStars = type === "village" ? 6 : 8;
+
+    if (stars > maxStars) {
+      const errorEmbed = new EmbedBuilder()
+        .setColor(0xff0000)
+        .setTitle("Error")
+        .setDescription(
+          `Quest **${type}** hanya tersedia hingga ⭐${maxStars}.`,
+        );
+
+      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+    }
     const quests = data.slice(start, start + perPage);
 
     const questList = quests
