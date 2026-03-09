@@ -28,14 +28,8 @@ class QuestCommand extends Command {
             .setDescription("Pilih game Monster Hunter")
             .setRequired(true)
             .addChoices(
-              {
-                name: "Monster Hunter Portable 3rd",
-                value: "mhp3rd",
-              },
-              {
-                name: "Monster Hunter Freedom Unite",
-                value: "mhfu",
-              },
+              { name: "Monster Hunter Portable 3rd", value: "mhp3rd" },
+              { name: "Monster Hunter Freedom Unite", value: "mhfu" },
             ),
         )
         .addStringOption((option) =>
@@ -68,18 +62,6 @@ class QuestCommand extends Command {
     const typeName = type.charAt(0).toUpperCase() + type.slice(1);
     const perPage = 10;
     const start = page * perPage;
-    const maxStars = type === "village" ? 6 : 8;
-
-    if (stars > maxStars) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor(0xff0000)
-        .setTitle("Error")
-        .setDescription(
-          `Quest **${type}** hanya tersedia hingga ⭐${maxStars}.`,
-        );
-
-      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-    }
     const quests = data.slice(start, start + perPage);
 
     const questList = quests
@@ -120,9 +102,26 @@ class QuestCommand extends Command {
     const type = interaction.options.getString("type");
     const stars = interaction.options.getInteger("stars");
 
+    // Validasi maxStars dipindah ke sini
+    const maxStars = {
+      mhp3rd: { village: 6, guild: 8 },
+      mhfu: { village: 6, guild: 8 },
+    };
+
+    const max = maxStars[game]?.[type];
+    if (max && stars > max) {
+      const errorEmbed = new EmbedBuilder()
+        .setColor(0xff0000)
+        .setTitle("Error")
+        .setDescription(`Quest **${type}** hanya tersedia hingga ⭐${max}.`);
+
+      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+    }
+
     try {
+      // Diganti dari localhost ke process.env.API_URL
       const res = await fetch(
-        `http://localhost:3000/quest/${game}/${type}/${stars}`,
+        `${process.env.API_URL}/quest/${game}/${type}/${stars}`,
       );
       const data = await res.json();
 
