@@ -7,6 +7,7 @@ class CloseAllLobbyCommand extends Command {
       ...options,
       name: "closealllobby",
       description: "[DEV] Menutup semua lobby aktif",
+      enabled: false,
     });
   }
 

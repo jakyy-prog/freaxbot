@@ -34,6 +34,9 @@ class HelpCommand extends Command {
 /listlobby
 → Melihat semua lobby yang sedang aktif
 
+/quests
+→Menampilkan daftar quest monster hunter
+
 /help
 → Menampilkan daftar command ini
 
