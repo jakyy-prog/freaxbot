@@ -22,10 +22,6 @@ class REdoClient extends SapphireClient {
       RegisterBehavior.BulkOverwrite,
     );
 
-    ApplicationCommandRegistries.setDefaultGuildIds([
-      process.env.DISCORD_GUILD_ID,
-    ]);
-
     return super.login(token);
   }
 }
