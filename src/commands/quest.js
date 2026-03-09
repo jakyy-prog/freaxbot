@@ -102,7 +102,6 @@ class QuestCommand extends Command {
     const type = interaction.options.getString("type");
     const stars = interaction.options.getInteger("stars");
 
-    // Validasi maxStars dipindah ke sini
     const maxStars = {
       mhp3rd: { village: 6, guild: 8 },
       mhfu: { village: 6, guild: 8 },
@@ -119,7 +118,6 @@ class QuestCommand extends Command {
     }
 
     try {
-      // Diganti dari localhost ke process.env.API_URL
       const res = await fetch(
         `${process.env.API_URL}/quest/${game}/${type}/${stars}`,
       );
