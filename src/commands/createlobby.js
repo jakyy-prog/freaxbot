@@ -53,6 +53,12 @@ class CreateLobbyCommand extends Command {
   }
 
   async chatInputRun(interaction) {
+    const gameRoles = {
+      rise: "1449983482733264978",
+      world: "1449983195184500978",
+      wilds: "1449983630591000616",
+    };
+
     try {
       const userHasLobby = db
         .prepare(
@@ -105,10 +111,17 @@ class CreateLobbyCommand extends Command {
         })
         .setTimestamp();
 
+      const roleId = gameRoles[game];
+      const roleMention = roleId ? `<@&${roleId}>` : "everyone";
+
       const reply = await interaction.reply({
-        content: `@everyone ${interaction.user} lagi buka lobby nih! Gas join `,
+        content: `${roleMention} ${interaction.user} lagi buka lobby nih! Gas join `,
         embeds: [embed],
         fetchReply: true,
+      });
+      await interaction.followUp({
+        content: "Lobby kamu akan otomatis ditutup dalam **6 jam**.",
+        ephemeral: true,
       });
 
       db.prepare(
@@ -151,7 +164,8 @@ class CreateLobbyCommand extends Command {
       }
 
       return interaction.reply({
-        content: "Terjadi kesalahan saat membuat lobby, mohon coba lagi.",
+        content:
+          "Terjadi kesalahan saat membuat lobby, mohon coba lagi. Atau hubungi <@1434622249331327106> untuk bantuan.",
         ephemeral: true,
       });
     }
