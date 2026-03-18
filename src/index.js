@@ -8,7 +8,7 @@ const { version, changelog } = require("./version");
 const { EmbedBuilder } = require("discord.js");
 
 client.once("clientReady", async () => {
-  const channel = await client.channels.fetch(process.env.UPDATE_CHANNEL_LOCAl);
+  const channel = await client.channels.fetch(process.env.UPDATE_CHANNEL_ID);
   if (channel) {
     await channel.send({
       embeds: [
