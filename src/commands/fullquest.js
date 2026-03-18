@@ -8,20 +8,22 @@ const {
   ComponentType,
 } = require("discord.js");
 
-class QuestCommand extends Command {
+class FullQuestCommand extends Command {
   constructor(context, options) {
     super(context, {
       ...options,
-      name: "quests",
-      description: "Menampilkan quest Monster Hunter.",
+      name: "fullquest",
+      description: "Menampilkan semua quest Monster Hunter berdasarkan stars.",
     });
   }
 
   registerApplicationCommands(registry) {
     registry.registerChatInputCommand(
       new SlashCommandBuilder()
-        .setName("quests")
-        .setDescription("Menampilkan quest Monster Hunter.")
+        .setName("fullquest")
+        .setDescription(
+          "Menampilkan semua quest Monster Hunter berdasarkan stars.",
+        )
         .addStringOption((option) =>
           option
             .setName("game")
@@ -45,10 +47,10 @@ class QuestCommand extends Command {
         .addIntegerOption((option) =>
           option
             .setName("stars")
-            .setDescription("Pilih bintang quest (1-8)")
+            .setDescription("Pilih bintang quest (1-11)")
             .setRequired(true)
             .setMinValue(1)
-            .setMaxValue(8),
+            .setMaxValue(11),
         ),
     );
   }
@@ -65,15 +67,23 @@ class QuestCommand extends Command {
     const quests = data.slice(start, start + perPage);
 
     const questList = quests
-      .map(
-        (q) =>
-          `⭐ **${q.stars}** — ${q.objective}\n📍 ${q.location} (${q.time}) | 💰 ${q.reward}z`,
-      )
+      .map((q) => {
+        const typeTag =
+          q.type === "Key Quest"
+            ? "**(Key-Quest)**"
+            : q.type === "Urgent Quest"
+              ? "**(!Urgent!)**"
+              : "**(Optional)**";
+        const req = q.requirements
+          ? `\n **(Requirements)** *${q.requirements}*`
+          : "";
+        return `${typeTag} ${q.quest_name}\n**Objective: ** ${q.objective}\n**Location: ** ${q.location} (${q.time}) | **Reward: ** ${q.reward}z${req}`;
+      })
       .join("\n\n");
 
     return new EmbedBuilder()
       .setColor(0xe8871e)
-      .setTitle(`${gameName}`)
+      .setTitle(gameName)
       .setDescription(questList)
       .setFooter({
         text: `${typeName} Quest • ⭐${stars} Stars • Halaman ${page + 1}/${totalPages}`,
@@ -83,13 +93,13 @@ class QuestCommand extends Command {
 
   buildButtons(page, totalPages) {
     const prev = new ButtonBuilder()
-      .setCustomId("prev")
+      .setCustomId("fullquest_prev")
       .setLabel("◀ Sebelumnya")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(page === 0);
 
     const next = new ButtonBuilder()
-      .setCustomId("next")
+      .setCustomId("fullquest_next")
       .setLabel("Selanjutnya ▶")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(page === totalPages - 1);
@@ -98,38 +108,46 @@ class QuestCommand extends Command {
   }
 
   async chatInputRun(interaction) {
+    await interaction.deferReply();
+
     const game = interaction.options.getString("game");
     const type = interaction.options.getString("type");
     const stars = interaction.options.getInteger("stars");
 
     const maxStars = {
       mhp3rd: { village: 6, guild: 8 },
-      mhfu: { village: 6, guild: 8 },
+      mhfu: { village: 9, guild: 8 },
     };
 
     const max = maxStars[game]?.[type];
     if (max && stars > max) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor(0xff0000)
-        .setTitle("Error")
-        .setDescription(`Quest **${type}** hanya tersedia hingga ⭐${max}.`);
-
-      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+      return interaction.editReply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(0xff0000)
+            .setTitle("Error")
+            .setDescription(
+              `Quest **${type}** hanya tersedia hingga ⭐${max}.`,
+            ),
+        ],
+      });
     }
 
     try {
       const res = await fetch(
-        `${process.env.API_URL}/quest/${game}/${type}/${stars}`,
+        `${process.env.API_URL}/quest/${game}/${type}/stars/${stars}`,
       );
       const data = await res.json();
 
       if (!data.length) {
-        const emptyEmbed = new EmbedBuilder()
-          .setColor(0xff0000)
-          .setTitle("Quest Tidak Ditemukan")
-          .setDescription(`Tidak ada quest untuk **${type}** ⭐${stars}.`);
-
-        return interaction.reply({ embeds: [emptyEmbed], ephemeral: true });
+        return interaction.editReply({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(0xff0000)
+              .setTitle("Quest Tidak Ditemukan")
+              .setDescription(`Tidak ada quest untuk **${type}** ⭐${stars}.`),
+          ],
+        });
       }
 
       const perPage = 10;
@@ -144,8 +162,7 @@ class QuestCommand extends Command {
           ? { embeds: [embed], components: [row] }
           : { embeds: [embed] };
 
-      const message = await interaction.reply(replyOptions);
-
+      const message = await interaction.editReply(replyOptions);
       if (totalPages <= 1) return;
 
       const collector = message.createMessageComponentCollector({
@@ -160,52 +177,44 @@ class QuestCommand extends Command {
             ephemeral: true,
           });
         }
+        if (i.customId === "fullquest_prev") page--;
+        if (i.customId === "fullquest_next") page++;
 
-        if (i.customId === "prev") page--;
-        if (i.customId === "next") page++;
-
-        const newEmbed = this.buildEmbed(
-          data,
-          page,
-          totalPages,
-          game,
-          type,
-          stars,
-        );
-        const newRow = this.buildButtons(page, totalPages);
-
-        await i.update({ embeds: [newEmbed], components: [newRow] });
+        await i.update({
+          embeds: [this.buildEmbed(data, page, totalPages, game, type, stars)],
+          components: [this.buildButtons(page, totalPages)],
+        });
       });
 
       collector.on("end", async () => {
         const disabledRow = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
-            .setCustomId("prev")
+            .setCustomId("fullquest_prev")
             .setLabel("◀ Sebelumnya")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(true),
           new ButtonBuilder()
-            .setCustomId("next")
+            .setCustomId("fullquest_next")
             .setLabel("Selanjutnya ▶")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(true),
         );
-
         await interaction
           .editReply({ components: [disabledRow] })
           .catch(() => {});
       });
     } catch (err) {
       console.error(err);
-
-      const errorEmbed = new EmbedBuilder()
-        .setColor(0xff0000)
-        .setTitle("Error")
-        .setDescription("API quest sedang offline.");
-
-      await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+      await interaction.editReply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(0xff0000)
+            .setTitle("Error")
+            .setDescription("API quest sedang offline."),
+        ],
+      });
     }
   }
 }
 
-module.exports = { QuestCommand };
+module.exports = { FullQuestCommand };
