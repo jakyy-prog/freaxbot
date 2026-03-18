@@ -116,7 +116,7 @@ class FullQuestCommand extends Command {
 
     const maxStars = {
       mhp3rd: { village: 6, guild: 8 },
-      mhfu: { village: 9, guild: 8 },
+      mhfu: { village: 9, guild: 9 },
     };
 
     const max = maxStars[game]?.[type];
