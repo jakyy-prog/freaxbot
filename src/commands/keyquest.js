@@ -40,7 +40,7 @@ class KeyQuestCommand extends Command {
             .setDescription("Pilih rank (1-9, contoh: 1 = HR1)")
             .setRequired(true)
             .setMinValue(1)
-            .setMaxValue(8),
+            .setMaxValue(9),
         ),
     );
   }
