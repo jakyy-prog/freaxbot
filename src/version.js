@@ -1,7 +1,7 @@
 module.exports = {
-  version: "indev 1.2.1",
+  version: "indev 1.2.2",
   changelog: [
-    "Merubah format command /quests menjadi /keyquest dan /fullquest",
-    "Perbaiki pagination embed",
+    "Menambahkan data untuk mhp3rd village dan guild hall",
+    "Command /keyquest dan /fullquest sudah dapat dipakai untuk mhp3rd",
   ],
 };
