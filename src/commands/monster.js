@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const { Command } = require("@sapphire/framework");
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { capitalizeWords, elementEmoji } = require("../utils/format");
 
 const API_URL = process.env.MHW_API_URL;
 const CACHE_TTL = Number(process.env.CACHE_TTL) || 300000;
@@ -106,26 +107,34 @@ class MonsterCommand extends Command {
 
     const monster = data[0];
 
-    const weakness =
-      monster.weaknesses
-        ?.filter((w) => w.stars > 0)
-        .map((w) => `⚡ ${w.element} ⭐${w.stars}`)
-        .join("\n") || "Tidak ada data";
+    const topWeakness = monster.weaknesses
+      ?.filter((w) => w.stars > 0)
+      .sort((a, b) => b.stars - a.stars)[0];
 
-    const image = `https://via.placeholder.com/400x200?text=${encodeURIComponent(
-      monster.name,
-    )}`;
+    const weakness = topWeakness
+      ? `${elementEmoji(topWeakness.element)} ${capitalizeWords(topWeakness.element)} ⭐${topWeakness.stars}`
+      : "Tidak ada data";
 
     const embed = new EmbedBuilder()
-      .setTitle(`🐉 ${monster.name}`)
+      .setTitle(`🐉 ${capitalizeWords(monster.name)}`)
       .setDescription(monster.description || "No description")
       .addFields(
-        { name: "Type", value: monster.type || "-", inline: true },
-        { name: "Species", value: monster.species || "-", inline: true },
-        { name: "Weakness", value: weakness },
+        {
+          name: "Type",
+          value: capitalizeWords(monster.type),
+          inline: true,
+        },
+        {
+          name: "Species",
+          value: capitalizeWords(monster.species),
+          inline: true,
+        },
+        {
+          name: "Weaknesses",
+          value: weakness,
+        },
       )
-      .setImage(image)
-      .setColor(0xff4757);
+      .setColor(0xd3d3d3);
 
     return interaction.reply({ embeds: [embed] });
   }
