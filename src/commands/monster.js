@@ -84,6 +84,9 @@ class MonsterCommand extends Command {
   }
 
   async chatInputRun(interaction) {
+    await interaction.deferReply();
+    await interaction.editReply("Mencari data monster...");
+
     const name = interaction.options.getString("name");
 
     const cacheKey = `monster_${name}`;
@@ -99,8 +102,8 @@ class MonsterCommand extends Command {
     }
 
     if (!data.length) {
-      return interaction.reply({
-        content: "Monster tidak ditemukan",
+      return interaction.editReply({
+        content: "Data monster tidak ditemukan",
         ephemeral: true,
       });
     }
@@ -109,10 +112,16 @@ class MonsterCommand extends Command {
 
     const topWeakness = monster.weaknesses
       ?.filter((w) => w.stars > 0)
-      .sort((a, b) => b.stars - a.stars)[0];
+      .sort((a, b) => b.stars - a.stars)
+      .slice(0, 2);
 
-    const weakness = topWeakness
-      ? `${elementEmoji(topWeakness.element)} ${capitalizeWords(topWeakness.element)} ⭐${topWeakness.stars}`
+    const weakness = topWeakness?.length
+      ? topWeakness
+          .map(
+            (w) =>
+              `${elementEmoji(w.element)} ${capitalizeWords(w.element)} ⭐${w.stars}`,
+          )
+          .join("\n")
       : "Tidak ada data";
 
     const embed = new EmbedBuilder()
@@ -136,7 +145,10 @@ class MonsterCommand extends Command {
       )
       .setColor(0xd3d3d3);
 
-    return interaction.reply({ embeds: [embed] });
+    return interaction.editReply({
+      content: null,
+      embeds: [embed],
+    });
   }
 }
 
