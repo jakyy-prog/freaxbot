@@ -2,6 +2,12 @@ const { Command } = require("@sapphire/framework");
 const { EmbedBuilder } = require("discord.js");
 const db = require("../../database/db");
 
+const GAME_LABELS = {
+  rise: "Monster Hunter Rise",
+  world: "Monster Hunter World",
+  wilds: "Monster Hunter Wilds",
+};
+
 class ListLobbyCommand extends Command {
   constructor(context, options) {
     super(context, {
@@ -24,11 +30,11 @@ class ListLobbyCommand extends Command {
       lobbies = db
         .prepare(
           `
-          SELECT room_id, password, objective, game, owner_id
-          FROM lobbies
-          WHERE is_active = 1
-          ORDER BY created_at DESC
-        `,
+        SELECT room_id, password, objective, game, owner_id, expires_at
+        FROM lobbies
+        WHERE is_active = 1
+        ORDER BY created_at DESC
+      `,
         )
         .all();
     } catch (err) {
@@ -46,30 +52,36 @@ class ListLobbyCommand extends Command {
       });
     }
 
-    let description = "";
+    // Setiap lobby jadi satu field embed, lebih rapi dari deskripsi panjang
+    const fields = lobbies.flatMap((lobby, index) => {
+      const gameLabel = GAME_LABELS[lobby.game] ?? lobby.game.toUpperCase();
+      const expiryText = lobby.expires_at
+        ? `<t:${lobby.expires_at}:R>` // Discord relative timestamp, e.g. "in 4 hours"
+        : "Tidak diketahui";
 
-    lobbies.forEach((lobby, index) => {
-      description +=
-        `🟢 **Lobby #${index + 1}**\n` +
-        `🎮 Game      : ${lobby.game.toUpperCase()}\n` +
-        `🆔 Room ID   : \`${lobby.room_id}\`\n` +
-        `🔐 Password  : ${lobby.password || "Tanpa Password"}\n` +
-        `🔍 Objective : ${lobby.objective || "Tanpa Objective"}\n` +
-        `👤 Host      : <@${lobby.owner_id}>\n\n`;
+      return [
+        {
+          name: `🟢 Lobby #${index + 1} — ${gameLabel}`,
+          value: [
+            `🆔 **Room ID**   : \`${lobby.room_id}\``,
+            `🔐 **Password**  : ${lobby.password || "Tanpa Password"}`,
+            `🎯 **Objective** : ${lobby.objective || "Tanpa Objective"}`,
+            `👤 **Host**      : <@${lobby.owner_id}>`,
+            `⏰ **Tutup**     : ${expiryText}`,
+          ].join("\n"),
+          inline: false,
+        },
+      ];
     });
 
     const embed = new EmbedBuilder()
-      .setTitle("📋 Daftar Lobby Aktif")
-      .setDescription(description)
+      .setTitle("📋 Daftar Lobby Monster Hunter Aktif")
       .setColor(0x00ff99)
-      .setFooter({
-        text: `Total lobby aktif: ${lobbies.length}`,
-      })
+      .addFields(fields)
+      .setFooter({ text: `${lobbies.length} lobby aktif` })
       .setTimestamp();
 
-    return interaction.reply({
-      embeds: [embed],
-    });
+    return interaction.reply({ embeds: [embed] });
   }
 }
 

@@ -1,4 +1,5 @@
 const { REdoClient } = require("./client");
+const { startLobbyScheduler } = require("./lib/lobbyScheduler");
 require("dotenv").config();
 
 const client = new REdoClient();
@@ -8,6 +9,7 @@ const { version, changelog } = require("./version");
 const { EmbedBuilder } = require("discord.js");
 
 client.once("clientReady", async () => {
+  startLobbyScheduler(client);
   const channel = await client.channels.fetch(process.env.UPDATE_CHANNEL_ID);
   if (channel) {
     await channel.send({

@@ -7,6 +7,7 @@ const {
   ActionRowBuilder,
   ComponentType,
 } = require("discord.js");
+const { questDb } = require("../../database/db");
 
 class FullQuestCommand extends Command {
   constructor(context, options) {
@@ -63,8 +64,7 @@ class FullQuestCommand extends Command {
     const gameName = gameNames[game] || game.toUpperCase();
     const typeName = type.charAt(0).toUpperCase() + type.slice(1);
     const perPage = 10;
-    const start = page * perPage;
-    const quests = data.slice(start, start + perPage);
+    const quests = data.slice(page * perPage, page * perPage + perPage);
 
     const questList = quests
       .map((q) => {
@@ -77,7 +77,7 @@ class FullQuestCommand extends Command {
         const req = q.requirements
           ? `\n **(Requirements)** *${q.requirements}*`
           : "";
-        return `${typeTag} ${q.quest_name}\n**Objective: ** ${q.objective}\n**Location: ** ${q.location} (${q.time}) | **Reward: ** ${q.reward}z${req}`;
+        return `${typeTag} ${q.quest_name}\n**Objective:** ${q.objective}\n**Location:** ${q.location} (${q.time}) | **Reward:** ${q.reward}z${req}`;
       })
       .join("\n\n");
 
@@ -92,19 +92,18 @@ class FullQuestCommand extends Command {
   }
 
   buildButtons(page, totalPages) {
-    const prev = new ButtonBuilder()
-      .setCustomId("fullquest_prev")
-      .setLabel("◀ Sebelumnya")
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(page === 0);
-
-    const next = new ButtonBuilder()
-      .setCustomId("fullquest_next")
-      .setLabel("Selanjutnya ▶")
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(page === totalPages - 1);
-
-    return new ActionRowBuilder().addComponents(prev, next);
+    return new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("fullquest_prev")
+        .setLabel("◀ Sebelumnya")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(page === 0),
+      new ButtonBuilder()
+        .setCustomId("fullquest_next")
+        .setLabel("Selanjutnya ▶")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(page === totalPages - 1),
+    );
   }
 
   async chatInputRun(interaction) {
@@ -134,10 +133,16 @@ class FullQuestCommand extends Command {
     }
 
     try {
-      const res = await fetch(
-        `${process.env.API_URL}/quest/${game}/${type}/stars/${stars}`,
-      );
-      const data = await res.json();
+      const data = questDb[game]
+        .prepare(
+          `
+        SELECT quest_name, objective, location, time, reward, type, requirements
+        FROM ${type}
+        WHERE stars = ?
+        ORDER BY stars ASC
+      `,
+        )
+        .all(stars);
 
       if (!data.length) {
         return interaction.editReply({
@@ -154,20 +159,16 @@ class FullQuestCommand extends Command {
       const totalPages = Math.ceil(data.length / perPage);
       let page = 0;
 
-      const embed = this.buildEmbed(data, page, totalPages, game, type, stars);
-      const row = this.buildButtons(page, totalPages);
+      const message = await interaction.editReply({
+        embeds: [this.buildEmbed(data, page, totalPages, game, type, stars)],
+        components: totalPages > 1 ? [this.buildButtons(page, totalPages)] : [],
+      });
 
-      const replyOptions =
-        totalPages > 1
-          ? { embeds: [embed], components: [row] }
-          : { embeds: [embed] };
-
-      const message = await interaction.editReply(replyOptions);
       if (totalPages <= 1) return;
 
       const collector = message.createMessageComponentCollector({
         componentType: ComponentType.Button,
-        time: 60000,
+        time: 60_000,
       });
 
       collector.on("collect", async (i) => {
@@ -179,7 +180,6 @@ class FullQuestCommand extends Command {
         }
         if (i.customId === "fullquest_prev") page--;
         if (i.customId === "fullquest_next") page++;
-
         await i.update({
           embeds: [this.buildEmbed(data, page, totalPages, game, type, stars)],
           components: [this.buildButtons(page, totalPages)],
@@ -187,34 +187,37 @@ class FullQuestCommand extends Command {
       });
 
       collector.on("end", async () => {
-        const disabledRow = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("fullquest_prev")
-            .setLabel("◀ Sebelumnya")
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(true),
-          new ButtonBuilder()
-            .setCustomId("fullquest_next")
-            .setLabel("Selanjutnya ▶")
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(true),
-        );
         await interaction
-          .editReply({ components: [disabledRow] })
+          .editReply({
+            components: [
+              new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                  .setCustomId("fullquest_prev")
+                  .setLabel("◀ Sebelumnya")
+                  .setStyle(ButtonStyle.Secondary)
+                  .setDisabled(true),
+                new ButtonBuilder()
+                  .setCustomId("fullquest_next")
+                  .setLabel("Selanjutnya ▶")
+                  .setStyle(ButtonStyle.Secondary)
+                  .setDisabled(true),
+              ),
+            ],
+          })
           .catch(() => {});
       });
     } catch (err) {
-      console.error(err);
+      console.error("FullQuest Error:", err);
       await interaction.editReply({
         embeds: [
           new EmbedBuilder()
             .setColor(0xff0000)
             .setTitle("Error")
-            .setDescription("API quest sedang offline."),
+            .setDescription("Gagal membaca data quest."),
         ],
       });
     }
-  }
-}
+  } // ← penutup chatInputRun
+} // ← penutup class
 
 module.exports = { FullQuestCommand };
