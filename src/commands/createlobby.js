@@ -1,6 +1,6 @@
 const { Command } = require("@sapphire/framework");
 const { EmbedBuilder } = require("discord.js");
-const db = require("../../database/db");
+const { db } = require("../../database/db");
 
 const LOBBY_DURATION_HOURS = 6;
 
